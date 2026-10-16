@@ -20,9 +20,14 @@ src/
     filters/           모든 실패를 { error: { code, message, fields?, until? } }로
     auth/              토큰 발급 · 검증(TokenService), 전역 AuthGuard, @Public · @AdminRoute · @CurrentUser · @CurrentAdmin
     validation.ts      class-validator 오류 → VALIDATION_FAILED + fields
+    clock.ts           Clock (현재 시각, 테스트에서 시간을 옮기려고 주입)
+    time.ts            toKstIso: 응답 시각은 +09:00
   integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
-    cache/             RedisService (캐시 · 로그인 실패 횟수)
-    kakao/             카카오 로컬 (2단계-3)
+    cache/             RedisService (캐시)
+    mail/              MailService(추상) · LogMailService(개발: 서버 로그에 인증번호)
+    kakao/             KakaoAuthClient(로그인: 코드 교환 · 토큰 확인 · 프로필 · 연결 끊기), 카카오 로컬은 2단계-3
+    google/ apple/     GoogleAuthClient · AppleAuthClient (OIDC: 코드 교환 + ID 토큰 검증은 jose, 애플 client_secret JWT · 토큰 폐기)
+    social-auth.module.ts  구글 · 애플 클라이언트 묶음
     kma/               기상청 단기예보 + 격자 변환 (2단계-3)
   modules/             기능 모듈 (2단계-1부터)
     auth/              /auth/* (소셜 · 이메일), /me/password
@@ -78,6 +83,17 @@ modules/reviews/
 - 새 코드를 넣으면 `ERROR_CODES`, API.md "에러 코드", 프론트 `types/common.ts`를 같이 고친다.
 - 예상 못 한 오류는 500 `INTERNAL_ERROR`로 바뀌고, 내부 메시지는 응답에 넣지 않고 로그에만 남긴다.
 
+## 시각
+
+- 지금 시각은 `new Date()` 대신 `Clock.now()`를 쓴다(만료 · 재전송 · 잠금을 테스트에서 시간을 옮겨 확인한다).
+- DB에는 UTC로 저장하고, 응답에 내보낼 때는 `toKstIso()`로 `+09:00` 표기를 쓴다(API.md).
+
+## 메일
+
+- 서비스는 `MailService`만 주입받는다. 실제 발송(SES · Resend 등)을 붙일 때는 `integrations/mail/`에 `MailService`를 상속한 클래스를 추가하고 `mail.module.ts`의 `useClass`만 바꾼다.
+- 외부 API 클라이언트(`integrations/*`)는 전역 `fetch` + 타임아웃(5초)을 쓰고, 상대가 4xx면 우리 쪽 의미의 코드(예: 401), 연결 실패 · 5xx면 502 `UPSTREAM_UNAVAILABLE`로 바꾼다. 테스트는 단위에서 `fetch`를, e2e에서 클라이언트 자체를 가짜로 바꾼다
+- 개발 전용 기능(어드민 OTP 고정값, `dev:` 소셜 토큰)은 `isDevelopment(config)`로 감싸 운영에서 켜지지 않게 한다.
+
 ## 설정 · 비밀값
 
 - 환경 변수는 `config/env.ts` 스키마에 먼저 추가하고 `ConfigService<Env, true>`의 `get('KEY', { infer: true })`로 읽는다. `process.env`를 직접 읽지 않는다(시드 · prisma.config 제외).
@@ -85,7 +101,7 @@ modules/reviews/
 
 ## DB
 
-- 스키마를 바꾸면 `npm run db:migrate -- --name <무엇을>` → 마이그레이션 파일을 같이 커밋한다.
+- 스키마를 바꾸면 `npm run db:migrate -- --name <무엇을>` → 마이그레이션 파일을 같이 커밋한다. Prisma 7은 마이그레이션 뒤 클라이언트를 자동으로 다시 만들지 않으니 `npx prisma generate`도 돌린다.
 - id는 `cuid()` 문자열. 시드 메뉴만 프론트 목과 같은 id(`m_12` 등)를 쓴다.
 - 식당 테이블은 없다. 식당은 카카오 `placeId`로 가리키고, 표시용 이름 · 좌표만 필요한 테이블에 같이 저장한다.
 - 지우는 것: 리뷰는 `deletedAt`(기록 유지), 광고 취소는 `canceledAt`. 사용자 탈퇴는 `status: withdrawn`.
@@ -93,7 +109,10 @@ modules/reviews/
 ## 테스트
 
 - `npm test`: 단위(`src/**/*.spec.ts`), `npm run test:e2e`: e2e(`test/*.e2e-spec.ts`).
-- e2e는 `configureApp`을 그대로 써서 실제와 같은 접두사 · 필터 · 검증으로 돈다. DB가 필요 없는 검사는 `PrismaService` · `RedisService`를 가짜로 바꾼다. DB가 필요한 e2e는 docker-compose DB를 쓴다(2단계-1에서 정리).
+- e2e는 `configureApp`을 그대로 써서 실제와 같은 접두사 · 필터 · 검증으로 돈다.
+  - `npm run test:e2e` (`test/*.e2e-spec.ts`): DB 없이. `PrismaService` · `RedisService`를 가짜로 바꾼다
+  - `npm run test:e2e:db` (`test/*.db-e2e-spec.ts`): docker-compose Postgres의 `lunchtime_test` DB를 쓴다. 시작할 때 DB가 없으면 만들고 `prisma migrate deploy` 후 테이블을 비운다(대상은 localhost의 lunchtime_test로 고정, 개발 DB는 건드리지 않음). `Clock` · `MailService`를 가짜로 바꿔 시간과 인증번호를 다룬다. 파일끼리는 차례로 돈다
+  - `prisma migrate reset`은 쓰지 않는다(AI 도구가 실행하면 Prisma가 사용자 동의를 요구한다)
 
 ## 코드 스타일
 

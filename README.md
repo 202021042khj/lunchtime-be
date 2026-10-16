@@ -35,6 +35,7 @@ npm run start:dev           # http://localhost:4000
 | `npm run build` / `npm run start:prod` | 빌드 / 빌드 결과 실행 |
 | `npm test` | 단위 테스트 (vitest) |
 | `npm run test:e2e` | e2e 테스트 (DB 없이 도는 공통 검사) |
+| `npm run test:e2e:db` | DB e2e 테스트 (docker DB의 `lunchtime_test` 사용, `npm run db:up` 먼저) |
 | `npm run lint` / `npm run format` | oxlint / prettier |
 | `npm run db:up` / `npm run db:down` | docker-compose 켜기 / 끄기 (데이터는 볼륨에 남음) |
 | `npm run db:migrate` | 스키마 변경 → 마이그레이션 만들고 반영 |
@@ -46,7 +47,10 @@ npm run start:dev           # http://localhost:4000
 | 구분 | 값 |
 | --- | --- |
 | 이메일 계정 | `test@lunchtime.dev` / `lunch1234` |
-| 어드민 | `admin` / `admin1234` + OTP. OTP는 인증 앱(Google Authenticator 등)에 비밀값 `JBSWY3DPEHPK3PXP`를 등록해서 나온 6자리 |
+| 어드민 | `admin` / `admin1234` + OTP. 개발 환경은 `123456`도 받는다. 실제 OTP는 인증 앱(Google Authenticator 등)에 비밀값 `JBSWY3DPEHPK3PXP`를 등록해서 나온 6자리 |
+| 소셜 (개발용) | `POST /v1/auth/login` `{ "provider": "kakao", "providerToken": "dev:아이디:이름" }` |
+
+이메일 가입 인증번호는 메일 대신 개발 서버 로그에 `[가입 인증번호] 이메일 → 123456` 형식으로 나온다.
 
 ## 환경 변수
 
@@ -57,6 +61,13 @@ npm run start:dev           # http://localhost:4000
 | `DATABASE_URL` | `postgresql://lunchtime:lunchtime@localhost:5432/lunchtime?schema=public` |
 | `REDIS_URL` | `redis://localhost:6379` |
 | `JWT_SECRET` / `ADMIN_JWT_SECRET` | 사용자 / 어드민 토큰 서명. 32자 이상, 서로 달라야 함 |
-| `KAKAO_REST_KEY` / `KMA_SERVICE_KEY` | 카카오 로컬 · 기상청 (2단계-3부터) |
+| `KAKAO_REST_KEY` | 카카오 REST 키: 로그인 인가 코드 교환 · 카카오 로컬 검색 |
+| `KAKAO_APP_ID` | 카카오 로그인: 토큰이 우리 앱 것인지 확인 (비우면 카카오 로그인 400) |
+| `KAKAO_CLIENT_SECRET` / `KAKAO_ADMIN_KEY` | 선택: 콘솔에서 Client Secret을 켰을 때 / 탈퇴 시 카카오 연결 끊기 |
+| `GOOGLE_CLIENT_IDS` / `GOOGLE_CLIENT_SECRET` | 구글 로그인: ID 토큰 aud로 받을 client ID(웹이 첫 번째, 앱은 쉼표로) / 웹 코드 교환용 secret |
+| `APPLE_SERVICE_ID` · `APPLE_BUNDLE_ID` · `APPLE_TEAM_ID` · `APPLE_KEY_ID` · `APPLE_PRIVATE_KEY` | Apple 로그인 (개발자 계정 준비 후). `.p8` 내용은 줄바꿈을 `\n`으로 |
+| `KMA_SERVICE_KEY` | 기상청 (2단계-3부터) |
+| `ADMIN_OTP_DEV_CODE` | 개발 전용 어드민 OTP 고정값 (기본 `123456`, 운영에서는 무시) |
+| `SOCIAL_DEV_LOGIN` | 개발 전용 `dev:` 소셜 토큰 허용 (`true`/`false`, 운영에서는 무시) |
 
 값이 틀리면 서버가 켜지지 않고 어떤 항목이 틀렸는지 보여 준다.
