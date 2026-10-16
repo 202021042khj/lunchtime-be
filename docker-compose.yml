@@ -1,0 +1,31 @@
+# 개발용 DB · 캐시. `docker compose up -d`로 띄우고 `docker compose down`으로 끈다 (데이터는 볼륨에 남는다)
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: lunchtime
+      POSTGRES_PASSWORD: lunchtime
+      POSTGRES_DB: lunchtime
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lunchtime"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:

@@ -1,0 +1,102 @@
+# lunchtime-be 구조 · 규칙
+
+Nest CLI 기본 뼈대(ESM, vitest, oxlint) 위에 이 프로젝트에서 정한 규칙이다. 남의 템플릿 대신 여기 적힌 것을 기준으로 한다.
+
+- **API 계약서는 `lunchtime-fe/API.md`다.** 경로 · 요청 · 응답 · 에러 코드를 여기서 새로 정하지 않는다. 바꿔야 하면 API.md를 먼저 고친다.
+- 프론트 타입은 `/docs-json`(OpenAPI)과 맞춰 본다(2단계-6).
+
+## 폴더
+
+```
+src/
+  main.ts              서버 시작 (configureApp + listen)
+  app.setup.ts         /v1 접두사, 검증 파이프, 에러 필터, CORS, Swagger — main과 e2e가 같이 쓴다
+  app.module.ts
+  config/env.ts        환경 변수 검사(zod). 틀리면 서버가 켜지지 않는다
+  prisma/              PrismaService (전역)
+  generated/prisma/    prisma generate 결과 (git 제외, npm install 때 자동 생성)
+  common/
+    errors/            ERROR_CODES(API.md 에러 코드 표) · AppException
+    filters/           모든 실패를 { error: { code, message, fields?, until? } }로
+    auth/              토큰 발급 · 검증(TokenService), 전역 AuthGuard, @Public · @AdminRoute · @CurrentUser · @CurrentAdmin
+    validation.ts      class-validator 오류 → VALIDATION_FAILED + fields
+  integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
+    cache/             RedisService (캐시 · 로그인 실패 횟수)
+    kakao/             카카오 로컬 (2단계-3)
+    kma/               기상청 단기예보 + 격자 변환 (2단계-3)
+  modules/             기능 모듈 (2단계-1부터)
+    auth/              /auth/* (소셜 · 이메일), /me/password
+    users/             /me
+    preferences/       /me/preferences, /preferences/*, /ingredients
+    locations/         /me/locations, /locations/*
+    favorites/         /me/favorites
+    restaurants/       /restaurants, /search, 메뉴 제보
+    recommendations/   /recommendations, /weather
+    reviews/           리뷰 · 신고 · 사진 업로드 · place_stats
+    admin/
+      auth/            /admin/auth/*, /admin/me
+      users/ sponsored/ menus/ reports/
+  health/              GET /health (DB · Redis)
+prisma/
+  schema.prisma        DB 스키마
+  migrations/          prisma migrate dev가 만든다 (git에 올린다)
+  seed.ts              개발용 데이터, seed-data.json = 프론트 목 데이터에서 뽑은 메뉴 · 재료 사전
+test/                  e2e (supertest). 단위 테스트는 src 안 *.spec.ts
+```
+
+## 모듈 하나의 모양
+
+```
+modules/reviews/
+  reviews.module.ts
+  reviews.controller.ts        경로 · 인증 표시 · Swagger 설명만. 로직 없음
+  reviews.service.ts           비즈니스 규칙 (하루 1개, place_stats 갱신 …)
+  dto/create-review.dto.ts     요청: class-validator, 응답: Swagger용 클래스
+  reviews.service.spec.ts      규칙이 있는 service는 단위 테스트
+```
+
+- Prisma는 service에서 바로 쓴다. 같은 쿼리를 여러 곳에서 쓰거나 복잡해지면 그때 `*.repository.ts`로 뺀다.
+- 다른 모듈의 데이터가 필요하면 그 모듈 service를 export해서 쓴다. 다른 모듈 테이블을 직접 고치지 않는다(예: 리뷰 삭제 → place_stats 갱신은 reviews가 맡는다).
+- 여러 테이블을 함께 바꾸면 `prisma.$transaction`으로 묶는다.
+- 응답 모양은 API.md 그대로 만든다. DB 모델을 그대로 내보내지 않는다(예: `passwordHash`, `deletedAt`). 모델 → 응답 변환은 service 안 `toXxx()` 함수로 둔다.
+
+## 경로 · 인증
+
+- 모든 API는 `/v1` 아래다(API.md 기본 URL). `/health`, `/docs`, `/docs-json`만 예외.
+- 전역 `AuthGuard`가 모든 경로를 지킨다.
+  - 아무 표시 없음 → 로그인 필수(사용자 토큰)
+  - `@Public()` → 비로그인 허용. 맞는 사용자 토큰이 오면 `@CurrentUser()`를 채운다. 틀리거나 만료된 토큰은 비로그인으로 본다
+  - `@AdminRoute()`(어드민 컨트롤러 클래스에) → 어드민 토큰만. 사용자 토큰은 401
+  - 어드민 로그인처럼 어드민 경로인데 공개인 것은 `@AdminRoute()` + `@Public()`
+- 사용자 · 어드민 토큰은 비밀값(`JWT_SECRET` / `ADMIN_JWT_SECRET`)과 `aud`(user / admin)가 다르다. accessToken은 사용자 1시간, 어드민 30분.
+- 정지 · 탈퇴 확인은 가드가 아니라 해당 service가 한다(정지 사용자는 조회는 되고 리뷰 · 신고만 막힘 → `USER_SUSPENDED`).
+
+## 에러
+
+- service는 `throw new AppException('REVIEW_DAILY_LIMIT')`처럼 **코드로만** 던진다. 상태 코드와 기본 문구는 `ERROR_CODES`가 정한다.
+- 추가 정보: `new AppException('USER_SUSPENDED', undefined, { until })`, 검증 실패는 `fields`.
+- 새 코드를 넣으면 `ERROR_CODES`, API.md "에러 코드", 프론트 `types/common.ts`를 같이 고친다.
+- 예상 못 한 오류는 500 `INTERNAL_ERROR`로 바뀌고, 내부 메시지는 응답에 넣지 않고 로그에만 남긴다.
+
+## 설정 · 비밀값
+
+- 환경 변수는 `config/env.ts` 스키마에 먼저 추가하고 `ConfigService<Env, true>`의 `get('KEY', { infer: true })`로 읽는다. `process.env`를 직접 읽지 않는다(시드 · prisma.config 제외).
+- `.env`는 git에 올리지 않는다. 새 변수는 `.env.example`에도 적는다.
+
+## DB
+
+- 스키마를 바꾸면 `npm run db:migrate -- --name <무엇을>` → 마이그레이션 파일을 같이 커밋한다.
+- id는 `cuid()` 문자열. 시드 메뉴만 프론트 목과 같은 id(`m_12` 등)를 쓴다.
+- 식당 테이블은 없다. 식당은 카카오 `placeId`로 가리키고, 표시용 이름 · 좌표만 필요한 테이블에 같이 저장한다.
+- 지우는 것: 리뷰는 `deletedAt`(기록 유지), 광고 취소는 `canceledAt`. 사용자 탈퇴는 `status: withdrawn`.
+
+## 테스트
+
+- `npm test`: 단위(`src/**/*.spec.ts`), `npm run test:e2e`: e2e(`test/*.e2e-spec.ts`).
+- e2e는 `configureApp`을 그대로 써서 실제와 같은 접두사 · 필터 · 검증으로 돈다. DB가 필요 없는 검사는 `PrismaService` · `RedisService`를 가짜로 바꾼다. DB가 필요한 e2e는 docker-compose DB를 쓴다(2단계-1에서 정리).
+
+## 코드 스타일
+
+- prettier(작은따옴표, trailing comma) + oxlint. 커밋 전에 `npm run format`, `npm run lint`.
+- ESM이라 상대 경로 import에 `.js`를 붙인다(`./reviews.service.js`).
+- 주석은 "왜"만 짧게, 한국어로.

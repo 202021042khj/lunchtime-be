@@ -1,0 +1,684 @@
+{
+  "menus": [
+    {
+      "id": "m_12",
+      "name": "얼큰 순두부찌개",
+      "cuisine": "한식",
+      "category": "찌개류",
+      "imageUrl": null,
+      "ingredients": [
+        "두부",
+        "바지락",
+        "계란",
+        "고춧가루"
+      ],
+      "tastes": [
+        "매운맛",
+        "국물"
+      ],
+      "spiceLevel": 3,
+      "weathers": [
+        "cold",
+        "rain"
+      ],
+      "kakaoKeyword": "순두부찌개",
+      "kakaoCategory": "찌개,전골",
+      "visible": true
+    },
+    {
+      "id": "m_3",
+      "name": "쌀국수",
+      "cuisine": "아시안",
+      "category": "아시안",
+      "imageUrl": null,
+      "ingredients": [
+        "쌀국수면",
+        "소고기",
+        "숙주",
+        "고수"
+      ],
+      "tastes": [
+        "국물",
+        "담백"
+      ],
+      "spiceLevel": 1,
+      "weathers": [
+        "cold",
+        "rain"
+      ],
+      "kakaoKeyword": "쌀국수",
+      "kakaoCategory": "베트남음식",
+      "visible": true
+    },
+    {
+      "id": "m_7",
+      "name": "김치찌개",
+      "cuisine": "한식",
+      "category": "찌개류",
+      "imageUrl": null,
+      "ingredients": [
+        "김치",
+        "돼지고기",
+        "두부"
+      ],
+      "tastes": [
+        "매운맛",
+        "국물"
+      ],
+      "spiceLevel": 2,
+      "weathers": [
+        "cold"
+      ],
+      "kakaoKeyword": "김치찌개",
+      "kakaoCategory": "찌개,전골",
+      "visible": true
+    },
+    {
+      "id": "m_5",
+      "name": "칼국수",
+      "cuisine": "한식",
+      "category": "면류",
+      "imageUrl": null,
+      "ingredients": [
+        "밀가루면",
+        "바지락",
+        "애호박"
+      ],
+      "tastes": [
+        "국물",
+        "담백"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "rain",
+        "cold"
+      ],
+      "kakaoKeyword": "칼국수",
+      "kakaoCategory": "국수",
+      "visible": true
+    },
+    {
+      "id": "m_9",
+      "name": "초밥",
+      "cuisine": "일식",
+      "category": "일식",
+      "imageUrl": null,
+      "ingredients": [
+        "밥",
+        "회·날것",
+        "생선",
+        "와사비"
+      ],
+      "tastes": [
+        "담백"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "clear",
+        "hot"
+      ],
+      "kakaoKeyword": "초밥",
+      "kakaoCategory": "초밥,롤",
+      "visible": true
+    },
+    {
+      "id": "m_21",
+      "name": "돈까스",
+      "cuisine": "일식",
+      "category": "일식",
+      "imageUrl": null,
+      "ingredients": [
+        "돼지고기",
+        "빵가루",
+        "계란",
+        "밀"
+      ],
+      "tastes": [
+        "고소함"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "clear"
+      ],
+      "kakaoKeyword": "돈까스",
+      "kakaoCategory": "돈까스,우동",
+      "visible": true
+    },
+    {
+      "id": "m_14",
+      "name": "짬뽕",
+      "cuisine": "중식",
+      "category": "중식",
+      "imageUrl": null,
+      "ingredients": [
+        "밀가루면",
+        "오징어",
+        "새우",
+        "홍합"
+      ],
+      "tastes": [
+        "매운맛",
+        "국물"
+      ],
+      "spiceLevel": 3,
+      "weathers": [
+        "cold",
+        "rain"
+      ],
+      "kakaoKeyword": "짬뽕",
+      "kakaoCategory": "중식",
+      "visible": true
+    },
+    {
+      "id": "m_30",
+      "name": "마라탕",
+      "cuisine": "중식",
+      "category": "중식",
+      "imageUrl": null,
+      "ingredients": [
+        "마라소스",
+        "청경채",
+        "두부피",
+        "땅콩"
+      ],
+      "tastes": [
+        "매운맛",
+        "얼얼함"
+      ],
+      "spiceLevel": 4,
+      "weathers": [
+        "cold"
+      ],
+      "kakaoKeyword": "마라탕",
+      "kakaoCategory": "중식",
+      "visible": true
+    },
+    {
+      "id": "m_2",
+      "name": "물냉면",
+      "cuisine": "한식",
+      "category": "면류",
+      "imageUrl": null,
+      "ingredients": [
+        "메밀면",
+        "오이",
+        "계란",
+        "배"
+      ],
+      "tastes": [
+        "시원함"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "hot"
+      ],
+      "kakaoKeyword": "냉면",
+      "kakaoCategory": "냉면",
+      "visible": true
+    },
+    {
+      "id": "m_18",
+      "name": "순대국밥",
+      "cuisine": "한식",
+      "category": "국밥",
+      "imageUrl": null,
+      "ingredients": [
+        "순대",
+        "내장류",
+        "들깨"
+      ],
+      "tastes": [
+        "국물",
+        "든든함"
+      ],
+      "spiceLevel": 1,
+      "weathers": [
+        "cold"
+      ],
+      "kakaoKeyword": "국밥",
+      "kakaoCategory": "국밥",
+      "visible": true
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_40",
+      "name": "비빔밥",
+      "cuisine": "한식",
+      "category": "밥류",
+      "ingredients": [
+        "밥",
+        "나물",
+        "고추장",
+        "계란"
+      ],
+      "tastes": [
+        "매콤",
+        "담백"
+      ],
+      "spiceLevel": 1,
+      "weathers": [
+        "clear",
+        "hot"
+      ],
+      "kakaoKeyword": "비빔밥",
+      "kakaoCategory": "한식"
+    },
+    {
+      "imageUrl": null,
+      "visible": false,
+      "id": "m_41",
+      "name": "꽃게탕",
+      "cuisine": "한식",
+      "category": "찌개류",
+      "ingredients": [
+        "꽃게",
+        "무",
+        "된장"
+      ],
+      "tastes": [
+        "얼큰",
+        "국물"
+      ],
+      "spiceLevel": 2,
+      "weathers": [
+        "cold"
+      ],
+      "kakaoKeyword": "꽃게탕",
+      "kakaoCategory": "해물,생선"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_42",
+      "name": "제육볶음",
+      "cuisine": "한식",
+      "category": "볶음류",
+      "ingredients": [
+        "돼지고기",
+        "양파",
+        "고추장"
+      ],
+      "tastes": [
+        "매콤",
+        "든든함"
+      ],
+      "spiceLevel": 2,
+      "weathers": [],
+      "kakaoKeyword": "제육볶음",
+      "kakaoCategory": "한식"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_43",
+      "name": "된장찌개",
+      "cuisine": "한식",
+      "category": "찌개류",
+      "ingredients": [
+        "된장",
+        "두부",
+        "애호박"
+      ],
+      "tastes": [
+        "국물",
+        "담백"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "cold",
+        "rain"
+      ],
+      "kakaoKeyword": "된장찌개",
+      "kakaoCategory": "찌개,전골"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_44",
+      "name": "짜장면",
+      "cuisine": "중식",
+      "category": "면류",
+      "ingredients": [
+        "밀가루면",
+        "춘장",
+        "돼지고기",
+        "양파"
+      ],
+      "tastes": [
+        "달콤",
+        "고소"
+      ],
+      "spiceLevel": 0,
+      "weathers": [],
+      "kakaoKeyword": "짜장면",
+      "kakaoCategory": "중식"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_45",
+      "name": "탕수육",
+      "cuisine": "중식",
+      "category": "요리류",
+      "ingredients": [
+        "돼지고기",
+        "전분",
+        "밀"
+      ],
+      "tastes": [
+        "달콤",
+        "튀김"
+      ],
+      "spiceLevel": 0,
+      "weathers": [],
+      "kakaoKeyword": "탕수육",
+      "kakaoCategory": "중식"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_46",
+      "name": "라멘",
+      "cuisine": "일식",
+      "category": "면류",
+      "ingredients": [
+        "밀가루면",
+        "돼지고기",
+        "계란",
+        "파"
+      ],
+      "tastes": [
+        "국물",
+        "고소"
+      ],
+      "spiceLevel": 1,
+      "weathers": [
+        "cold",
+        "rain"
+      ],
+      "kakaoKeyword": "라멘",
+      "kakaoCategory": "일본식라면"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_47",
+      "name": "규동",
+      "cuisine": "일식",
+      "category": "덮밥류",
+      "ingredients": [
+        "밥",
+        "소고기",
+        "양파"
+      ],
+      "tastes": [
+        "달콤",
+        "든든함"
+      ],
+      "spiceLevel": 0,
+      "weathers": [],
+      "kakaoKeyword": "규동",
+      "kakaoCategory": "일식"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_48",
+      "name": "파스타",
+      "cuisine": "양식",
+      "category": "면류",
+      "ingredients": [
+        "밀",
+        "토마토",
+        "마늘",
+        "올리브"
+      ],
+      "tastes": [
+        "고소"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "clear"
+      ],
+      "kakaoKeyword": "파스타",
+      "kakaoCategory": "이탈리안"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_49",
+      "name": "햄버거",
+      "cuisine": "패스트푸드",
+      "category": "버거",
+      "ingredients": [
+        "밀",
+        "소고기",
+        "치즈",
+        "양상추"
+      ],
+      "tastes": [
+        "고소",
+        "든든함"
+      ],
+      "spiceLevel": 0,
+      "weathers": [],
+      "kakaoKeyword": "햄버거",
+      "kakaoCategory": "햄버거"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_50",
+      "name": "포케",
+      "cuisine": "샐러드·건강식",
+      "category": "샐러드",
+      "ingredients": [
+        "밥",
+        "회·날것",
+        "생선",
+        "아보카도"
+      ],
+      "tastes": [
+        "담백",
+        "시원함"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "hot",
+        "clear"
+      ],
+      "kakaoKeyword": "포케",
+      "kakaoCategory": "샐러드"
+    },
+    {
+      "imageUrl": null,
+      "visible": false,
+      "id": "m_51",
+      "name": "떡볶이",
+      "cuisine": "분식",
+      "category": "분식",
+      "ingredients": [
+        "떡",
+        "고추장",
+        "어묵"
+      ],
+      "tastes": [
+        "매콤",
+        "달콤"
+      ],
+      "spiceLevel": 2,
+      "weathers": [
+        "rain"
+      ],
+      "kakaoKeyword": "떡볶이",
+      "kakaoCategory": "분식"
+    },
+    {
+      "imageUrl": null,
+      "visible": true,
+      "id": "m_52",
+      "name": "팟타이",
+      "cuisine": "아시안",
+      "category": "면류",
+      "ingredients": [
+        "쌀국수면",
+        "새우",
+        "숙주",
+        "땅콩"
+      ],
+      "tastes": [
+        "달콤",
+        "고소"
+      ],
+      "spiceLevel": 1,
+      "weathers": [],
+      "kakaoKeyword": "팟타이",
+      "kakaoCategory": "태국음식"
+    },
+    {
+      "imageUrl": null,
+      "visible": false,
+      "id": "m_53",
+      "name": "냉모밀",
+      "cuisine": "일식",
+      "category": "면류",
+      "ingredients": [
+        "메밀면",
+        "무",
+        "파"
+      ],
+      "tastes": [
+        "시원함",
+        "담백"
+      ],
+      "spiceLevel": 0,
+      "weathers": [
+        "hot"
+      ],
+      "kakaoKeyword": "냉모밀",
+      "kakaoCategory": "일식"
+    }
+  ],
+  "options": {
+    "ingredients": [
+      "오이",
+      "고수",
+      "가지",
+      "버섯",
+      "당근",
+      "피망",
+      "굴",
+      "내장류",
+      "선지",
+      "양고기",
+      "회·날것",
+      "깻잎"
+    ],
+    "allergies": [
+      "갑각류 (새우·게)",
+      "견과류",
+      "땅콩",
+      "우유",
+      "달걀",
+      "밀",
+      "대두",
+      "생선",
+      "조개류",
+      "복숭아"
+    ],
+    "cuisines": [
+      "한식",
+      "중식",
+      "일식",
+      "양식",
+      "분식",
+      "아시안",
+      "패스트푸드",
+      "샐러드·건강식"
+    ]
+  },
+  "dictionary": [
+    "오이",
+    "고수",
+    "가지",
+    "버섯",
+    "당근",
+    "피망",
+    "굴",
+    "내장류",
+    "선지",
+    "양고기",
+    "회·날것",
+    "깻잎",
+    "미나리",
+    "부추",
+    "셀러리",
+    "파프리카",
+    "고추",
+    "마늘",
+    "생강",
+    "두부",
+    "청국장",
+    "숙주",
+    "올리브"
+  ],
+  "allergens": {
+    "갑각류 (새우·게)": [
+      "새우",
+      "게",
+      "꽃게"
+    ],
+    "견과류": [
+      "호두",
+      "잣",
+      "캐슈넛"
+    ],
+    "땅콩": [
+      "땅콩"
+    ],
+    "우유": [
+      "우유",
+      "치즈",
+      "버터"
+    ],
+    "달걀": [
+      "계란"
+    ],
+    "밀": [
+      "밀",
+      "밀가루면",
+      "빵가루"
+    ],
+    "대두": [
+      "두부",
+      "두부피",
+      "간장"
+    ],
+    "생선": [
+      "생선"
+    ],
+    "조개류": [
+      "바지락",
+      "홍합"
+    ],
+    "복숭아": [
+      "복숭아"
+    ]
+  },
+  "preferences": {
+    "dislikedIngredients": [
+      "오이",
+      "고수"
+    ],
+    "allergies": [
+      "갑각류 (새우·게)"
+    ],
+    "spiceLevel": 3,
+    "favoriteCuisines": [
+      "한식",
+      "일식",
+      "아시안"
+    ]
+  }
+}
