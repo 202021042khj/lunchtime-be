@@ -24,6 +24,17 @@ export default defineConfig({
       SOCIAL_DEV_LOGIN: 'true',
       // 카카오 API는 테스트에서 가짜 클라이언트로 바꾼다
       KAKAO_APP_ID: '999',
+      // 개발 .env에 넣어 둔 실제 키가 테스트에 섞이지 않게 비워 둔다 (process.env가 .env보다 먼저)
+      KAKAO_REST_KEY: '',
+      KAKAO_CLIENT_SECRET: '',
+      KAKAO_ADMIN_KEY: '',
+      GOOGLE_CLIENT_IDS: '',
+      GOOGLE_CLIENT_SECRET: '',
+      APPLE_SERVICE_ID: '',
+      APPLE_BUNDLE_ID: '',
+      APPLE_TEAM_ID: '',
+      APPLE_KEY_ID: '',
+      APPLE_PRIVATE_KEY: '',
     },
   },
 });

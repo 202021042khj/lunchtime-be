@@ -11,6 +11,8 @@ import { MailModule } from './integrations/mail/mail.module.js';
 import { AdminAuditModule } from './modules/admin/audit/admin-audit.service.js';
 import { AdminAuthModule } from './modules/admin/auth/admin-auth.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { LocationsModule } from './modules/locations/locations.module.js';
+import { PreferencesModule } from './modules/preferences/preferences.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
@@ -28,6 +30,8 @@ import { PrismaModule } from './prisma/prisma.module.js';
     // 기능 모듈 (docs/CONVENTIONS.md)
     AuthModule,
     UsersModule,
+    PreferencesModule,
+    LocationsModule,
     AdminAuthModule,
   ],
   controllers: [HealthController],

@@ -23,9 +23,9 @@ src/
     clock.ts           Clock (현재 시각, 테스트에서 시간을 옮기려고 주입)
     time.ts            toKstIso: 응답 시각은 +09:00
   integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
-    cache/             RedisService (캐시)
+    cache/             RedisService.cached(key, ttl, load): 캐시. Redis가 안 되면 캐시 없이 load()만 (캐시 장애로 API가 실패하지 않게)
     mail/              MailService(추상) · LogMailService(개발: 서버 로그에 인증번호)
-    kakao/             KakaoAuthClient(로그인: 코드 교환 · 토큰 확인 · 프로필 · 연결 끊기), 카카오 로컬은 2단계-3
+    kakao/             KakaoAuthClient(로그인), KakaoLocalClient(주소 · 키워드 검색, 좌표→동네. 국내 밖 좌표는 422)
     google/ apple/     GoogleAuthClient · AppleAuthClient (OIDC: 코드 교환 + ID 토큰 검증은 jose, 애플 client_secret JWT · 토큰 폐기)
     social-auth.module.ts  구글 · 애플 클라이언트 묶음
     kma/               기상청 단기예보 + 격자 변환 (2단계-3)
@@ -74,6 +74,7 @@ modules/reviews/
   - `@AdminRoute()`(어드민 컨트롤러 클래스에) → 어드민 토큰만. 사용자 토큰은 401
   - 어드민 로그인처럼 어드민 경로인데 공개인 것은 `@AdminRoute()` + `@Public()`
 - 사용자 · 어드민 토큰은 비밀값(`JWT_SECRET` / `ADMIN_JWT_SECRET`)과 `aud`(user / admin)가 다르다. accessToken은 사용자 1시간, 어드민 30분.
+- 취향 점수 · 제외 규칙은 `modules/preferences/taste-scoring.ts`의 순수 함수로 둔다. 미리보기와 추천(2단계-3)이 같이 쓴다
 - 정지 · 탈퇴 확인은 가드가 아니라 해당 service가 한다(정지 사용자는 조회는 되고 리뷰 · 신고만 막힘 → `USER_SUSPENDED`).
 
 ## 에러
@@ -113,6 +114,8 @@ modules/reviews/
   - `npm run test:e2e` (`test/*.e2e-spec.ts`): DB 없이. `PrismaService` · `RedisService`를 가짜로 바꾼다
   - `npm run test:e2e:db` (`test/*.db-e2e-spec.ts`): docker-compose Postgres의 `lunchtime_test` DB를 쓴다. 시작할 때 DB가 없으면 만들고 `prisma migrate deploy` 후 테이블을 비운다(대상은 localhost의 lunchtime_test로 고정, 개발 DB는 건드리지 않음). `Clock` · `MailService`를 가짜로 바꿔 시간과 인증번호를 다룬다. 파일끼리는 차례로 돈다
   - `prisma migrate reset`은 쓰지 않는다(AI 도구가 실행하면 Prisma가 사용자 동의를 요구한다)
+  - 외부 서비스 키(카카오 · 구글 · 애플)는 `vitest.config.e2e-db.ts`에서 빈 값으로 고정한다. 개발 `.env`에 넣은 실제 키가 테스트 결과를 바꾸지 않게 하려는 것이다
+  - Redis는 개발 서버와 같이 쓰므로, 캐시를 확인하는 테스트는 실행마다 다른 키(검색어 · 좌표)를 쓴다
 
 ## 코드 스타일
 
