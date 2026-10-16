@@ -66,7 +66,7 @@ npm run start:dev           # http://localhost:4000
 | `KAKAO_CLIENT_SECRET` / `KAKAO_ADMIN_KEY` | 선택: 콘솔에서 Client Secret을 켰을 때 / 탈퇴 시 카카오 연결 끊기 |
 | `GOOGLE_CLIENT_IDS` / `GOOGLE_CLIENT_SECRET` | 구글 로그인: ID 토큰 aud로 받을 client ID(웹이 첫 번째, 앱은 쉼표로) / 웹 코드 교환용 secret |
 | `APPLE_SERVICE_ID` · `APPLE_BUNDLE_ID` · `APPLE_TEAM_ID` · `APPLE_KEY_ID` · `APPLE_PRIVATE_KEY` | Apple 로그인 (개발자 계정 준비 후). `.p8` 내용은 줄바꿈을 `\n`으로 |
-| `KMA_SERVICE_KEY` | 기상청 (2단계-3부터) |
+| `KMA_SERVICE_KEY` / `KMA_BASE_URL` | 기상청 단기예보 (공공데이터포털 일반 인증키, End Point는 비우면 기본값) |
 | `ADMIN_OTP_DEV_CODE` | 개발 전용 어드민 OTP 고정값 (기본 `123456`, 운영에서는 무시) |
 | `SOCIAL_DEV_LOGIN` | 개발 전용 `dev:` 소셜 토큰 허용 (`true`/`false`, 운영에서는 무시) |
 

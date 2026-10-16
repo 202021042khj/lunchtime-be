@@ -97,6 +97,9 @@ export function codeForStatus(status: number): ErrorCode {
       return 'NOT_FOUND';
     case 409:
       return 'CONFLICT';
+    // 업로드 파일이 너무 큼 (multer 한도)
+    case 413:
+      return 'VALIDATION_FAILED';
     case 429:
       return 'RATE_LIMITED';
     case 502:

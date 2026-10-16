@@ -22,13 +22,14 @@ src/
     validation.ts      class-validator 오류 → VALIDATION_FAILED + fields
     clock.ts           Clock (현재 시각, 테스트에서 시간을 옮기려고 주입)
     time.ts            toKstIso: 응답 시각은 +09:00
+    cursor.ts          paginate(items, cursor, limit): API.md 커서 목록 (한 번에 모은 목록을 자를 때)
   integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
     cache/             RedisService.cached(key, ttl, load): 캐시. Redis가 안 되면 캐시 없이 load()만 (캐시 장애로 API가 실패하지 않게)
     mail/              MailService(추상) · LogMailService(개발: 서버 로그에 인증번호)
     kakao/             KakaoAuthClient(로그인), KakaoLocalClient(주소 · 키워드 검색, 좌표→동네. 국내 밖 좌표는 422)
     google/ apple/     GoogleAuthClient · AppleAuthClient (OIDC: 코드 교환 + ID 토큰 검증은 jose, 애플 client_secret JWT · 토큰 폐기)
     social-auth.module.ts  구글 · 애플 클라이언트 묶음
-    kma/               기상청 단기예보 + 격자 변환 (2단계-3)
+    kma/               KmaClient(기상청 단기예보) · kma-grid.ts(위경도 → 격자, 발표 시각)
   modules/             기능 모듈 (2단계-1부터)
     auth/              /auth/* (소셜 · 이메일), /me/password
     users/             /me
@@ -74,6 +75,7 @@ modules/reviews/
   - `@AdminRoute()`(어드민 컨트롤러 클래스에) → 어드민 토큰만. 사용자 토큰은 401
   - 어드민 로그인처럼 어드민 경로인데 공개인 것은 `@AdminRoute()` + `@Public()`
 - 사용자 · 어드민 토큰은 비밀값(`JWT_SECRET` / `ADMIN_JWT_SECRET`)과 `aud`(user / admin)가 다르다. accessToken은 사용자 1시간, 어드민 30분.
+- 식당: 우리 DB에 식당 테이블은 없다. 카카오 검색 결과를 `PlaceCacheService`(Redis, 7일)에 기억해 두고 상세 · 찜에 쓴다. 찜은 표시 정보를 `Favorite`에 함께 저장한다. 별점 · 리뷰 수 · 찜 · 광고 · 영업시간은 `RestaurantViewService.build()`가 한 번에 붙인다(추천 · 통합 검색도 이걸 쓴다). 근거 · 정렬 · 영업 중 규칙은 `restaurant-rules.ts` 순수 함수
 - 취향 점수 · 제외 규칙은 `modules/preferences/taste-scoring.ts`의 순수 함수로 둔다. 미리보기와 추천(2단계-3)이 같이 쓴다
 - 정지 · 탈퇴 확인은 가드가 아니라 해당 service가 한다(정지 사용자는 조회는 되고 리뷰 · 신고만 막힘 → `USER_SUSPENDED`).
 

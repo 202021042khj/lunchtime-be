@@ -84,6 +84,40 @@ export class KakaoLocalClient {
     return (await res.json()) as T;
   }
 
+  // 근처 음식점(FD6) 검색. 카카오는 한 검색에 최대 45곳(15개씩 3쪽)만 준다 → 끝까지 모아서 돌려준다.
+  // keyword가 없으면 카테고리 검색(음식점 전체)
+  async searchRestaurants(opts: {
+    keyword?: string;
+    lat: number;
+    lng: number;
+    radiusM: number;
+    sort?: 'distance' | 'accuracy';
+    maxPages?: number;
+  }): Promise<KakaoPlaceDoc[]> {
+    const docs: KakaoPlaceDoc[] = [];
+    const path = opts.keyword
+      ? '/search/keyword.json'
+      : '/search/category.json';
+    for (let page = 1; page <= (opts.maxPages ?? 3); page++) {
+      const res = await this.get<{
+        documents: KakaoPlaceDoc[];
+        meta: { is_end: boolean };
+      }>(path, {
+        ...(opts.keyword && { query: opts.keyword }),
+        category_group_code: 'FD6',
+        x: String(opts.lng),
+        y: String(opts.lat),
+        radius: String(Math.min(opts.radiusM, 20000)),
+        sort: opts.sort ?? 'distance',
+        size: '15',
+        page: String(page),
+      });
+      docs.push(...res.documents);
+      if (res.meta.is_end) break;
+    }
+    return docs;
+  }
+
   async searchKeyword(query: string, size = 10): Promise<KakaoPlaceDoc[]> {
     const res = await this.get<{ documents: KakaoPlaceDoc[] }>(
       '/search/keyword.json',

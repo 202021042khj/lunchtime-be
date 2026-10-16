@@ -345,6 +345,8 @@ model SponsoredPlace {
   endDate          DateTime      @db.Date
   // { open, close, break: [시작, 끝] | null, closedDays[] }
   hours            Json?
+  // 식당 사진 (어드민이 올린 것, 우리 저장소 주소). 사진 없는 식당 목록에서 이 사진을 쓴다
+  imageUrl         String?
   priority         Int           @db.SmallInt
   feeKrw           Int
   paymentStatus    PaymentStatus @default(pending)

@@ -35,6 +35,15 @@ export default defineConfig({
       APPLE_TEAM_ID: '',
       APPLE_KEY_ID: '',
       APPLE_PRIVATE_KEY: '',
+      KMA_SERVICE_KEY: '',
+      // 사진은 docker-compose 저장소(RustFS)의 테스트 전용 버킷에 실제로 올린다 (개발 서버가 켜질 때처럼 자동 생성)
+      S3_ENDPOINT: 'http://localhost:9000',
+      S3_REGION: 'us-east-1',
+      S3_BUCKET: 'lunchtime-test',
+      S3_ACCESS_KEY: 'lunchtime',
+      S3_SECRET_KEY: 'lunchtime-storage',
+      S3_PUBLIC_URL: 'http://localhost:9000/lunchtime-test',
+      S3_FORCE_PATH_STYLE: 'true',
     },
   },
 });
