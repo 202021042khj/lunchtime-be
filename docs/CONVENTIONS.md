@@ -25,6 +25,7 @@ src/
     cursor.ts          paginate(items, cursor, limit): API.md 커서 목록 (한 번에 모은 목록을 자를 때)
   integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
     cache/             RedisService.cached(key, ttl, load): 캐시. Redis가 안 되면 캐시 없이 load()만 (캐시 장애로 API가 실패하지 않게)
+    storage/           StorageService(S3 호환): 어드민 사진 저장(첫 바이트로 형식 확인 · 5MB) · 우리 저장소 주소인지 확인, 개발 환경은 버킷 · 공개 읽기 자동 생성
     mail/              MailService(추상) · LogMailService(개발: 서버 로그에 인증번호)
     kakao/             KakaoAuthClient(로그인), KakaoLocalClient(주소 · 키워드 검색, 좌표→동네. 국내 밖 좌표는 422)
     google/ apple/     GoogleAuthClient · AppleAuthClient (OIDC: 코드 교환 + ID 토큰 검증은 jose, 애플 client_secret JWT · 토큰 폐기)

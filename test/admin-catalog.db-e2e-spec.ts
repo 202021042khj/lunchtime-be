@@ -286,10 +286,10 @@ describe('어드민 메뉴 · 광고 · 사진 (DB e2e)', () => {
 
     it('재료 사전: 메뉴 재료 포함, 추가', async () => {
       const added = await as(http().post('/v1/admin/ingredients'))
-        .send({ name: '고수풀' })
+        .send({ name: '샤프란' })
         .expect(200);
       expect(added.body.items).toEqual(
-        expect.arrayContaining(['고수풀', '바지락', '계란']),
+        expect.arrayContaining(['샤프란', '바지락', '계란']),
       );
     });
   });

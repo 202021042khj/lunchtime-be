@@ -10,14 +10,14 @@ lunchtime(점심 메뉴 추천) 백엔드 API. NestJS + PostgreSQL + Prisma.
 ## 준비물
 
 - Node.js 24, npm 11
-- Docker Desktop (PostgreSQL 17 · Redis 7을 docker-compose로 띄운다)
+- Docker Desktop (PostgreSQL 17 · Redis 7 · 이미지 저장소 RustFS를 docker-compose로 띄운다)
 
 ## 처음 실행
 
 ```bash
 npm install                 # prisma generate도 같이 돈다
 cp .env.example .env        # JWT_SECRET · ADMIN_JWT_SECRET은 32자 이상, 서로 다르게
-npm run db:up               # Postgres(5432) · Redis(6379)
+npm run db:up               # Postgres(5432) · Redis(6379) · 이미지 저장소 RustFS(9000)
 npm run db:migrate          # 스키마 반영
 npm run db:seed             # 메뉴 · 재료 사전 · 테스트 계정
 npm run start:dev           # http://localhost:4000
@@ -67,7 +67,11 @@ npm run start:dev           # http://localhost:4000
 | `GOOGLE_CLIENT_IDS` / `GOOGLE_CLIENT_SECRET` | 구글 로그인: ID 토큰 aud로 받을 client ID(웹이 첫 번째, 앱은 쉼표로) / 웹 코드 교환용 secret |
 | `APPLE_SERVICE_ID` · `APPLE_BUNDLE_ID` · `APPLE_TEAM_ID` · `APPLE_KEY_ID` · `APPLE_PRIVATE_KEY` | Apple 로그인 (개발자 계정 준비 후). `.p8` 내용은 줄바꿈을 `\n`으로 |
 | `KMA_SERVICE_KEY` / `KMA_BASE_URL` | 기상청 단기예보 (공공데이터포털 일반 인증키, End Point는 비우면 기본값) |
+| `S3_ENDPOINT` · `S3_REGION` · `S3_BUCKET` · `S3_ACCESS_KEY` · `S3_SECRET_KEY` | 이미지 저장소 (S3 호환). 개발은 docker-compose의 RustFS(`http://localhost:9000`, 버킷 `lunchtime`), 운영은 S3 · R2 등. `S3_ENDPOINT`를 비우면 AWS S3 |
+| `S3_PUBLIC_URL` · `S3_FORCE_PATH_STYLE` | 사진 공개 주소 앞부분(운영은 CDN 주소) · RustFS/MinIO는 `true` |
 | `ADMIN_OTP_DEV_CODE` | 개발 전용 어드민 OTP 고정값 (기본 `123456`, 운영에서는 무시) |
 | `SOCIAL_DEV_LOGIN` | 개발 전용 `dev:` 소셜 토큰 허용 (`true`/`false`, 운영에서는 무시) |
 
 값이 틀리면 서버가 켜지지 않고 어떤 항목이 틀렸는지 보여 준다.
+
+**이미지 저장소**: 개발 서버(development)가 켜질 때 버킷이 없으면 만들고 공개 읽기를 연다. 운영 버킷은 직접 만들고 공개 읽기(또는 CDN)를 설정한다. Docker를 막 켠 직후에는 저장소가 몇 초 늦게 준비되어 사진 업로드 테스트가 실패할 수 있다(다시 돌리면 통과).
