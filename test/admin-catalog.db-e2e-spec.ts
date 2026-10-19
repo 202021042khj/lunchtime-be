@@ -408,13 +408,16 @@ describe('어드민 메뉴 · 광고 · 사진 (DB e2e)', () => {
         .query({ lat: O.lat, lng: O.lng, menuId })
         .expect(200);
       const byName = Object.fromEntries(
-        res.body.items.map((r: { name: string; imageUrl: string }) => [
-          r.name,
-          r.imageUrl,
-        ]),
+        res.body.items.map(
+          (r: { name: string; imageUrl: string; imageSource: string }) => [
+            r.name,
+            [r.imageUrl, r.imageSource],
+          ],
+        ),
       );
-      expect(byName['사진있는 순두부']).toBe(adImage);
-      expect(byName['사진없는 찌개집']).toBe(menuImage);
+      // 출처: 광고 사진은 실제 식당 사진, 메뉴 사진은 예시
+      expect(byName['사진있는 순두부']).toEqual([adImage, 'sponsored']);
+      expect(byName['사진없는 찌개집']).toEqual([menuImage, 'menu']);
       // 자유 검색어에는 메뉴 사진을 쓰지 않는다
       const free = await http()
         .get('/v1/restaurants')

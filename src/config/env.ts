@@ -7,6 +7,8 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  // 이 API 서버의 바깥 주소 (리뷰 사진 업로드 주소를 만들 때). 운영은 https://api.…
+  API_PUBLIC_URL: z.string().default('http://localhost:4000'),
   DATABASE_URL: z.string().startsWith('postgresql://'),
   REDIS_URL: z.string().startsWith('redis://'),
   JWT_SECRET: z.string().min(32),

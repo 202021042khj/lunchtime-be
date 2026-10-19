@@ -20,7 +20,7 @@ import { isDevelopment } from '../../config/dev-only.js';
 import type { Env } from '../../config/env.js';
 import { detectImageType, MAX_IMAGE_BYTES } from './image-type.js';
 
-export type ImageFolder = 'menus' | 'sponsored';
+export type ImageFolder = 'menus' | 'sponsored' | 'reviews';
 
 // 이미지 저장소 (S3 호환: 개발 RustFS, 운영 S3 · R2 등). 이미지는 공개 읽기 주소로 보여 준다
 @Injectable()

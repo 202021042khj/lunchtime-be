@@ -105,7 +105,10 @@ export class RecommendationsService {
       });
       // 인기 순위는 실제로 보여 주는 메뉴 순서대로 (근처 식당이 없어 빠진 메뉴는 순위를 차지하지 않는다)
       if (restaurants.length) {
-        picked.push({ c: { ...c, popularRank: context.personal ? null : picked.length + 1 }, restaurants });
+        picked.push({
+          c: { ...c, popularRank: context.personal ? null : picked.length + 1 },
+          restaurants,
+        });
       }
       if (picked.length === PICK) break;
     }

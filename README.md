@@ -58,6 +58,7 @@ npm run start:dev           # http://localhost:4000
 | --- | --- |
 | `PORT` | 기본 4000 |
 | `CORS_ORIGIN` | 프론트 주소, 쉼표로 여러 개 (기본 `http://localhost:3000`) |
+| `API_PUBLIC_URL` | 이 API 서버의 바깥 주소 (기본 `http://localhost:4000`). 리뷰 사진 업로드 주소(`uploadUrl`)를 만들 때 쓴다. 운영은 `https://api.…` |
 | `DATABASE_URL` | `postgresql://lunchtime:lunchtime@localhost:5432/lunchtime?schema=public` |
 | `REDIS_URL` | `redis://localhost:6379` |
 | `JWT_SECRET` / `ADMIN_JWT_SECRET` | 사용자 / 어드민 토큰 서명. 32자 이상, 서로 달라야 함 |
@@ -74,4 +75,4 @@ npm run start:dev           # http://localhost:4000
 
 값이 틀리면 서버가 켜지지 않고 어떤 항목이 틀렸는지 보여 준다.
 
-**이미지 저장소**: 개발 서버(development)가 켜질 때 버킷이 없으면 만들고 공개 읽기를 연다. 운영 버킷은 직접 만들고 공개 읽기(또는 CDN)를 설정한다. Docker를 막 켠 직후에는 저장소가 몇 초 늦게 준비되어 사진 업로드 테스트가 실패할 수 있다(다시 돌리면 통과).
+**이미지 저장소**: 개발 서버(development)가 켜질 때 버킷이 없으면 만들고 공개 읽기를 연다. 운영 버킷은 직접 만들고 공개 읽기(또는 CDN)를 설정한다. 폴더는 `menus/` · `sponsored/`(어드민) · `reviews/`(리뷰 사진). Docker를 막 켠 직후에는 저장소가 몇 초 늦게 준비되어 사진 업로드 테스트가 실패할 수 있다(다시 돌리면 통과).

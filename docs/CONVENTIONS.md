@@ -25,7 +25,7 @@ src/
     cursor.ts          paginate(items, cursor, limit): API.md 커서 목록 (한 번에 모은 목록을 자를 때)
   integrations/        외부 서비스 연결. 비즈니스 규칙은 두지 않는다
     cache/             RedisService.cached(key, ttl, load): 캐시. Redis가 안 되면 캐시 없이 load()만 (캐시 장애로 API가 실패하지 않게)
-    storage/           StorageService(S3 호환): 어드민 사진 저장(첫 바이트로 형식 확인 · 5MB) · 우리 저장소 주소인지 확인, 개발 환경은 버킷 · 공개 읽기 자동 생성
+    storage/           StorageService(S3 호환): 어드민 · 리뷰 사진 저장(첫 바이트로 형식 확인 · 5MB) · 우리 저장소 주소인지 확인, 개발 환경은 버킷 · 공개 읽기 자동 생성
     mail/              MailService(추상) · LogMailService(개발: 서버 로그에 인증번호)
     kakao/             KakaoAuthClient(로그인), KakaoLocalClient(주소 · 키워드 검색, 좌표→동네. 국내 밖 좌표는 422)
     google/ apple/     GoogleAuthClient · AppleAuthClient (OIDC: 코드 교환 + ID 토큰 검증은 jose, 애플 client_secret JWT · 토큰 폐기)
@@ -39,7 +39,7 @@ src/
     favorites/         /me/favorites
     restaurants/       /restaurants, /search, 메뉴 제보
     recommendations/   /recommendations, /weather
-    reviews/           리뷰 · 신고 · 사진 업로드 · place_stats
+    reviews/           리뷰 · 신고 · 사진 업로드(/uploads/review-photos) · place_stats · 메뉴 근거 리뷰 수
     admin/
       auth/            /admin/auth/*, /admin/me
       users/ sponsored/ menus/ reports/
@@ -57,10 +57,13 @@ test/                  e2e (supertest). 단위 테스트는 src 안 *.spec.ts
 modules/reviews/
   reviews.module.ts
   reviews.controller.ts        경로 · 인증 표시 · Swagger 설명만. 로직 없음
-  reviews.service.ts           비즈니스 규칙 (하루 1개, place_stats 갱신 …)
-  dto/create-review.dto.ts     요청: class-validator, 응답: Swagger용 클래스
-  reviews.service.spec.ts      규칙이 있는 service는 단위 테스트
+  reviews.service.ts           흐름 (하루 1개, 트랜잭션 안에서 place_stats · 메뉴 근거 다시 세기 …)
+  reviews.dto.ts               요청: class-validator (형식만. API.md 전용 에러 코드는 규칙 함수에서)
+  review-rules.ts              DB 없는 규칙 함수 (입력 정리 · 개수 · 업로드 주소 서명)
+  review-rules.spec.ts         규칙 함수 단위 테스트. DB가 필요한 흐름은 test/*.db-e2e-spec.ts
 ```
+
+- 리뷰 사진: `POST /uploads/review-photos`가 `ReviewPhoto`(url 빈 값)를 만들고 서명된 주소(`API_PUBLIC_URL` + `exp` · `sig`, 10분)를 준다. 그 주소의 `PUT`(공개 경로, 서명으로 확인)이 본문을 읽어 `StorageService.putImage('reviews')`로 올린다. 리뷰는 업로드가 끝난 내 사진만 붙일 수 있다
 
 - Prisma는 service에서 바로 쓴다. 같은 쿼리를 여러 곳에서 쓰거나 복잡해지면 그때 `*.repository.ts`로 뺀다.
 - 다른 모듈의 데이터가 필요하면 그 모듈 service를 export해서 쓴다. 다른 모듈 테이블을 직접 고치지 않는다(예: 리뷰 삭제 → place_stats 갱신은 reviews가 맡는다).

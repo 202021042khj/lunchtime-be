@@ -721,3 +721,77 @@
 - 추천 한 번에 카카오 검색이 메뉴마다(최대 12번 × 키워드) 일어난다. 10분 캐시가 있지만 사용자가 늘면 비용을 다시 본다
 - 시간대(점심 · 저녁) 구분은 아직 없다(plan.md 입력 항목)
 - 다음: 2단계-4 리뷰 · 신고 · 리뷰 사진(식당 이미지 맨 앞 순서 포함)
+
+## 2단계-4 · 리뷰 · 신고 · 리뷰 사진 (2026-10-19)
+
+**결정**
+- 리뷰 사진 업로드는 API.md 계약(`POST /uploads/review-photos` → `{ photoId, uploadUrl }` → 앱이 PUT)을 그대로 두고, `uploadUrl`을 우리 서버 주소로 만들었다
+  - 주소에 사진 id와 만료(10분)를 HMAC으로 서명해 담는다. 로그인 헤더 없이 PUT 한 번만 된다
+  - 서버가 파일 내용으로 JPG · PNG · WEBP, 5MB를 확인하고 저장소(`reviews/`)에 올린다. 어드민 사진과 같은 이유(RustFS가 presigned PUT의 형식을 막지 못함 · CORS)
+  - 사진 한도를 API.md의 10MB에서 5MB로 맞췄다(어드민 사진과 같은 한도)
+- 태그는 서버가 정한 7개 목록에서만 받는다. 메뉴는 직접 입력을 받는다(항목당 20자)
+- 정지 사용자는 등록 · 수정 · 사진 주소 발급 · 신고가 막히고 삭제는 된다. 정지 기간이 지났으면 상태가 아직 suspended여도 쓸 수 있다
+- 하루 한 개는 KST 날짜 기준, 삭제한 리뷰는 세지 않는다. 같은 사용자 · 식당 동시 등록은 Postgres advisory lock으로 줄 세운다
+- 집계는 더하고 빼지 않고 다시 센다(별점 합 · 리뷰 수, 메뉴 근거 = 그 메뉴를 먹은 사람 수). 수정 · 삭제가 섞여도 어긋나지 않는다
+- 식당 사진 순서: 가장 최근 리뷰의 첫 사진 → 광고 · 입점 사진 → 메뉴 사진 → null
+
+**백엔드**
+- `config/env.ts`: `API_PUBLIC_URL`(기본 `http://localhost:4000`). `.env` · `.env.example`에도 추가
+- `integrations/storage`: 폴더 `reviews` 추가
+- `modules/reviews/`
+  - `review-rules.ts`: 입력 정리 · 규칙(`REVIEW_TOO_LONG` · `TOO_MANY_PHOTOS` · 태그 목록), 업로드 주소 서명 · 확인
+  - `review-access.service.ts`: 쓸 수 있는 사용자인지(탈퇴 401, 정지 403 + until)
+  - `reviews.service.ts`: 목록(정렬 4가지, DB에서 offset 페이지), 리뷰 쓰기 폼, 등록 · 수정 · 삭제(soft) · 신고, 사진 붙이기 · 떼기, 집계 다시 세기
+  - `review-photos.service.ts`: 업로드 주소 발급, PUT 업로드(한 번만, 동시 업로드도 처음 것만)
+  - `reviews.controller.ts`: 컨트롤러 3개(`restaurants/:placeId/…`, `me/reviews` · `reviews/:id`, `uploads/review-photos`). PUT 본문은 스트림으로 직접 읽고 6MB에서 끊는다
+- `restaurant-view.service.ts`: 식당마다 최근 리뷰 사진을 쿼리 1번(`DISTINCT ON`)으로 붙인다
+
+**프론트**
+- `NEXT_PUBLIC_API_REAL`에 `reviews` 추가(리뷰 목록 · 쓰기 폼 · 사진 · 내 리뷰 · 수정 · 삭제 · 신고). `restaurants` 묶음에서 리뷰 경로를 뺐다
+- 리뷰 쓰기: 사진 PUT 실패를 무시하던 것을 고쳐 "사진을 올리지 못했어요" 안내. 고를 때 JPG · PNG · WEBP · 5MB만 담는다
+- MY 리뷰 카드 썸네일에 리뷰 첫 사진
+
+**확인한 것**
+- 백엔드: `npm test` 71개(리뷰 규칙 4 추가), `npm run test:e2e` 12개, `npm run test:e2e:db` 97개(리뷰 14 추가) 두 번 연속 통과, lint 경고 0, build 통과
+- 리뷰 DB e2e(카카오 가짜, 사진은 테스트 버킷에 실제 업로드)
+  - 사진: 발급 → PUT 204 → 다시 PUT 409, 서명 틀림 403, HTML 400, 6장 400, 올리지 않은 사진 · 남의 사진은 리뷰에 못 붙임
+  - 등록: 별점 · 리뷰 수 · 메뉴 근거 · 식당 사진 반영, 하루 한 개 409 · 다음 날 가능, 500자 초과 · 없는 태그 · 별점 6 · 없는 식당 · 비로그인
+  - 정지 사용자 403 + until, 기간 지나면 가능
+  - 목록 정렬 4가지 · 페이지 · isMine, 상세 최근 2개 · 별점 분포, 쓰기 폼 메뉴 순서, 내 리뷰
+  - 수정(남의 것 403, 보낸 항목만, 사진 떼면 식당 사진도 빠짐), 신고(내 것 403 · 사유 · 메모 200자 · 409), 삭제(목록 · 집계에서 빠지고 기록 유지, 같은 날 다시 쓰기 가능)
+- Playwright(실서버 · 실제 카카오 식당) 21개 통과
+  - 리뷰 쓰기 폼 → GIF 거절 → 사진 PUT → 등록, 상세 최근 리뷰, 하루 한 개 안내
+  - 모두 보기의 리뷰 사진, 다시 열면 식당 사진 = 리뷰 사진
+  - 다른 사용자 리뷰 신고 · 다시 신고 안내
+  - MY 카드 사진 · 수정 · 삭제
+- 확인용으로 개발 DB에 쓴 리뷰는 API로 지우고 확인용 사용자는 탈퇴시켰다
+
+**남은 것 · 확인 필요**
+- 리뷰에 붙이지 않은 사진 · 뗀 사진(저장소 파일)을 지우는 정리 작업이 없다. 운영 전에 만든다
+- 사진 주소 발급 횟수 제한이 없다(요청 과다 제한 `RATE_LIMITED`와 같이 정한다)
+- 신고 처리(어드민)는 2단계-5. 신고가 쌓인 리뷰를 자동으로 숨기지는 않는다
+- 다음: 2단계-5 어드민 유저 관리 · 리뷰 신고 처리 · 어드민 토큰 갱신
+
+## 2단계-4 보충 · 예시 이미지 표시 (2026-10-19)
+
+**결정**
+- 법적 분쟁을 피하려고, 이 식당의 실제 사진이 아닌 이미지에는 모든 화면에서 "예시"를 표시한다(사용자 결정)
+  - 실제 사진: 리뷰 사진 · 광고(사장님 제공) 사진 → 표시 없음. "예시"라고 쓰면 사실과 달라서 뺐다
+  - 예시: 메뉴 대표 사진(메뉴 검색 대체) · 종류별 일러스트 · 아이콘
+  - 큰 사진(지도 상세, 찜 카드): 사진 오른쪽 아래에 작은 글씨 "예시 이미지로, 실제 식당 음식과 다를 수 있어요"
+  - 썸네일(지도 · 근처 목록, 리뷰 쓰기 창): 왼쪽 위 "예시" 배지
+  - 홈 · 취향의 메뉴 소개 카드는 특정 식당 사진이 아니라서 제외
+
+**백엔드**
+- `RestaurantViewService.build()`: `imageSource`(`review` · `sponsored` · `menu` · null)를 `imageUrl`과 같은 순서로 정한다(`pickImage`)
+- 테스트: 리뷰 DB e2e(리뷰 사진 → review, 뗀 뒤 → null), 어드민 DB e2e(광고 사진 → sponsored, 메뉴 사진 → menu)
+
+**프론트**
+- `types/restaurant.ts` `imageSource`, 목에도 추가
+- `FoodImage`: `exampleNotice`("caption" | "badge"), `isExampleImage(r)`, `EXAMPLE_IMAGE_NOTICE`
+- `RestaurantDetailContent` · `RestaurantCard` = 문구, `RestaurantRow` · `WriteReviewModal` = 배지
+
+**확인한 것**
+- 백엔드 `npm test` 71, `npm run test:e2e:db` 97 통과, lint 경고 0
+- Playwright 7개 통과: 목록 배지(사진 없는 식당 있음 · 리뷰 사진 식당 없음), 상세 문구(있음 · 없음), 찜 카드 문구, 모바일 목록 배지. 확인용 리뷰 · 찜은 지웠다
+- 개발 서버: 이 PC의 PATH에 `%SystemRoot%\system32`가 풀리지 않은 글자로 들어 있어 `nest --watch`가 재시작할 때 `taskkill`을 못 찾고 죽었다. 이번에는 System32를 PATH 앞에 붙여 띄웠고 코드 변경 후 자동 재시작이 됐다
