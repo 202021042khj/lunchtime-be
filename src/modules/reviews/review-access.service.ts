@@ -15,7 +15,12 @@ export class ReviewAccess {
   async assertCanWrite(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, status: true, suspendedUntil: true },
+      select: {
+        name: true,
+        status: true,
+        suspendedUntil: true,
+        suspendReason: true,
+      },
     });
     if (!user || user.status === 'withdrawn') {
       throw new AppException('UNAUTHORIZED');
@@ -25,7 +30,11 @@ export class ReviewAccess {
       user.status === 'suspended' &&
       (!user.suspendedUntil || user.suspendedUntil > this.clock.now())
     ) {
-      throw new AppException('USER_SUSPENDED', undefined, {
+      // API.md: 정지 사유는 사용자에게도 보여 준다
+      const message = user.suspendReason
+        ? `이용이 정지된 계정이에요. (사유: ${user.suspendReason})`
+        : undefined;
+      throw new AppException('USER_SUSPENDED', message, {
         until: user.suspendedUntil ? toKstIso(user.suspendedUntil) : null,
       });
     }

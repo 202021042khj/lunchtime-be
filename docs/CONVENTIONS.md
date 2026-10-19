@@ -3,7 +3,7 @@
 Nest CLI 기본 뼈대(ESM, vitest, oxlint) 위에 이 프로젝트에서 정한 규칙이다. 남의 템플릿 대신 여기 적힌 것을 기준으로 한다.
 
 - **API 계약서는 `lunchtime-fe/API.md`다.** 경로 · 요청 · 응답 · 에러 코드를 여기서 새로 정하지 않는다. 바꿔야 하면 API.md를 먼저 고친다.
-- 프론트 타입은 `/docs-json`(OpenAPI)과 맞춰 본다(2단계-6).
+- 프론트 타입과 응답이 맞는지는 프론트의 `npm run check:contract`로 확인한다(실서버 응답을 `types/*`에 넣어 tsc 검사). 응답 DTO를 Swagger에 다 적지 않아서 `/docs-json`만으로는 확인할 수 없다.
 
 ## 폴더
 
@@ -42,7 +42,8 @@ src/
     reviews/           리뷰 · 신고 · 사진 업로드(/uploads/review-photos) · place_stats · 메뉴 근거 리뷰 수
     admin/
       auth/            /admin/auth/*, /admin/me
-      users/ sponsored/ menus/ reports/
+      menus/ sponsored/ uploads/   admin-catalog.module
+      users/ reports/              admin-moderation.module (유저 정지 · 신고 처리. 리뷰 삭제 집계는 reviews의 ReviewStatsService)
   health/              GET /health (DB · Redis)
 prisma/
   schema.prisma        DB 스키마

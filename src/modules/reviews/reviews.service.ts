@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Clock } from '../../common/clock.js';
 import { decodeOffset, DEFAULT_LIMIT } from '../../common/cursor.js';
 import { AppException } from '../../common/errors/app.exception.js';
+import { kstDayStart } from '../../common/time.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RestaurantsService } from '../restaurants/restaurants.service.js';
 import { ReviewAccess } from './review-access.service.js';
+import { ReviewStatsService } from './review-stats.service.js';
 import {
   normalizeReview,
   REVIEW_TAGS,
@@ -23,7 +25,6 @@ import type {
 
 type Tx = Prisma.TransactionClient;
 
-const KST_OFFSET_MS = 9 * 3600_000;
 // 리뷰 쓰기 메뉴 목록 길이
 const FORM_MENU_LIMIT = 20;
 
@@ -40,6 +41,7 @@ export class ReviewsService {
     private readonly prisma: PrismaService,
     private readonly restaurants: RestaurantsService,
     private readonly access: ReviewAccess,
+    private readonly stats: ReviewStatsService,
     private readonly clock: Clock,
   ) {}
 
@@ -122,7 +124,7 @@ export class ReviewsService {
           userId,
           placeId,
           deletedAt: null,
-          createdAt: { gte: this.todayStartKst() },
+          createdAt: { gte: kstDayStart(this.clock.now()) },
         },
       });
       if (already) throw new AppException('REVIEW_DAILY_LIMIT');
@@ -138,7 +140,7 @@ export class ReviewsService {
         },
       });
       await this.attachPhotos(tx, userId, review.id, fields.photoIds);
-      await this.recalculate(tx, placeId, fields.menus);
+      await this.stats.recalculate(tx, placeId, fields.menus);
       return review.id;
     });
     return this.result(id, userId);
@@ -168,7 +170,7 @@ export class ReviewsService {
       if (dto.photoIds) {
         await this.attachPhotos(tx, userId, id, fields.photoIds);
       }
-      await this.recalculate(tx, current.placeId, [
+      await this.stats.recalculate(tx, current.placeId, [
         ...current.menus,
         ...fields.menus,
       ]);
@@ -184,7 +186,7 @@ export class ReviewsService {
         where: { id },
         data: { deletedAt: this.clock.now() },
       });
-      await this.recalculate(tx, current.placeId, current.menus);
+      await this.stats.recalculate(tx, current.placeId, current.menus);
     });
   }
 
@@ -302,49 +304,6 @@ export class ReviewsService {
     }
   }
 
-  // 식당 별점 · 리뷰 수, 그리고 리뷰 "먹은 메뉴"에 나온 메뉴 마스터의 근거(먹은 사람 수)를 다시 센다
-  private async recalculate(tx: Tx, placeId: string, menuNames: string[]) {
-    const agg = await tx.review.aggregate({
-      where: { placeId, deletedAt: null },
-      _sum: { rating: true },
-      _count: { _all: true },
-    });
-    const stats = {
-      ratingSum: agg._sum.rating ?? 0,
-      reviewCount: agg._count._all,
-    };
-    await tx.placeStats.upsert({
-      where: { placeId },
-      create: { placeId, ...stats },
-      update: stats,
-    });
-
-    const names = [...new Set(menuNames)];
-    if (!names.length) return;
-    const menus = await tx.menu.findMany({
-      where: {
-        OR: [{ name: { in: names } }, { kakaoKeyword: { in: names } }],
-      },
-      select: { id: true, name: true, kakaoKeyword: true },
-    });
-    for (const menu of menus) {
-      const eaters = await tx.review.findMany({
-        where: {
-          placeId,
-          deletedAt: null,
-          menus: { hasSome: [menu.name, menu.kakaoKeyword] },
-        },
-        distinct: ['userId'],
-        select: { userId: true },
-      });
-      await tx.placeMenuEvidence.upsert({
-        where: { placeId_menuId: { placeId, menuId: menu.id } },
-        create: { placeId, menuId: menu.id, reviewCount: eaters.length },
-        update: { reviewCount: eaters.length },
-      });
-    }
-  }
-
   private async result(id: string, userId: string) {
     const review = await this.prisma.review.findUniqueOrThrow({
       where: { id },
@@ -361,14 +320,5 @@ export class ReviewsService {
         reviewCount: count,
       },
     };
-  }
-
-  // 오늘(KST) 0시
-  private todayStartKst(): Date {
-    const kst = new Date(this.clock.now().getTime() + KST_OFFSET_MS);
-    return new Date(
-      Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate()) -
-        KST_OFFSET_MS,
-    );
   }
 }

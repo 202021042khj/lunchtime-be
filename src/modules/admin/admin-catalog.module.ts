@@ -5,7 +5,7 @@ import { AdminSponsoredController } from './sponsored/admin-sponsored.controller
 import { AdminSponsoredService } from './sponsored/admin-sponsored.service.js';
 import { AdminUploadsController } from './uploads/admin-uploads.controller.js';
 
-// 어드민 메뉴 관리 · 광고 식당 고정 · 사진 올리기 (유저 관리 · 리뷰 신고는 2단계-5)
+// 어드민 메뉴 관리 · 광고 식당 고정 · 사진 올리기 (유저 관리 · 리뷰 신고는 admin-moderation.module)
 @Module({
   controllers: [
     AdminMenusController,

@@ -11,6 +11,7 @@ import { MailModule } from './integrations/mail/mail.module.js';
 import { StorageModule } from './integrations/storage/storage.service.js';
 import { AdminAuditModule } from './modules/admin/audit/admin-audit.service.js';
 import { AdminCatalogModule } from './modules/admin/admin-catalog.module.js';
+import { AdminModerationModule } from './modules/admin/admin-moderation.module.js';
 import { AdminAuthModule } from './modules/admin/auth/admin-auth.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { FavoritesModule } from './modules/favorites/favorites.module.js';
@@ -47,6 +48,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     ReviewsModule,
     AdminAuthModule,
     AdminCatalogModule,
+    AdminModerationModule,
   ],
   controllers: [HealthController],
 })

@@ -25,7 +25,7 @@ npm run start:dev           # http://localhost:4000
 
 - 상태 확인: `GET http://localhost:4000/health` → `{ status: "ok", checks: { db: "up", redis: "up" } }` (하나라도 down이면 503)
 - API 문서: http://localhost:4000/docs (OpenAPI JSON: `/docs-json`)
-- API는 모두 `/v1` 아래다. 프론트는 `.env.local`에 `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/v1`, `NEXT_PUBLIC_API_MOCK=false`로 연결한다(2단계-6)
+- API는 모두 `/v1` 아래다. 프론트는 기본으로 `http://localhost:4000/v1`에 연결한다(`NEXT_PUBLIC_API_BASE_URL`로 바꿈, 목은 `NEXT_PUBLIC_API_MOCK=true`)
 
 ## 스크립트
 

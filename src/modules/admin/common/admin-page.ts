@@ -33,3 +33,11 @@ export function adminPage<T>(items: T[], query: AdminPageQueryDto) {
     size,
   };
 }
+
+// DB에서 바로 자를 때: 전체 수로 페이지를 맞추고(끝을 넘으면 마지막 페이지) skip · take를 준다
+export function adminPageWindow(total: number, query: AdminPageQueryDto) {
+  const size = query.size ?? 20;
+  const last = Math.max(1, Math.ceil(total / size));
+  const page = Math.min(query.page ?? 1, last);
+  return { page, size, skip: (page - 1) * size, take: size };
+}
