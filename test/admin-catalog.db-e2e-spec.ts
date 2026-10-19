@@ -144,6 +144,13 @@ describe('어드민 메뉴 · 광고 · 사진 (DB e2e)', () => {
   describe('메뉴 관리', () => {
     let menuId = '';
     let imageUrl = '';
+    // 이 파일이 메뉴를 만들기 전 전체 · 숨김 개수
+    const base = { all: 0, hidden: 0 };
+
+    beforeAll(async () => {
+      base.all = await prisma.menu.count();
+      base.hidden = await prisma.menu.count({ where: { visible: false } });
+    });
 
     it('사진과 함께 추가 → 목록 · 개수, 같은 이름은 409', async () => {
       imageUrl = (await upload(PNG).expect(201)).body.imageUrl;
@@ -161,12 +168,14 @@ describe('어드민 메뉴 · 광고 · 사진 (DB e2e)', () => {
         .expect(409);
       expect(dup.body.error.code).toBe('CONFLICT');
 
-      const list = await as(http().get('/v1/admin/menus')).expect(200);
-      expect(list.body).toMatchObject({
-        total: 1,
-        page: 1,
-        size: 20,
-        counts: { all: 1, hidden: 0 },
+      // 다른 테스트 파일도 메뉴를 만들므로 이 파일 메뉴('테스트 …')로 거르고, 개수는 시작 때보다 늘어난 만큼 본다
+      const list = await as(
+        http().get('/v1/admin/menus').query({ q: '테스트' }),
+      ).expect(200);
+      expect(list.body).toMatchObject({ total: 1, page: 1, size: 20 });
+      expect(list.body.counts).toEqual({
+        all: base.all + 1,
+        hidden: base.hidden,
       });
     });
 
@@ -217,38 +226,35 @@ describe('어드민 메뉴 · 광고 · 사진 (DB e2e)', () => {
         data: [{ menuId: other.body.id }, { menuId: other.body.id }],
       });
 
-      const all = await as(http().get('/v1/admin/menus')).expect(200);
+      const list = (query: Record<string, string | number>) =>
+        as(
+          http()
+            .get('/v1/admin/menus')
+            .query({ q: '테스트', ...query }),
+        ).expect(200);
+      const all = await list({});
       // 노출 메뉴 먼저
       expect(all.body.items.map((m: { name: string }) => m.name)).toEqual([
         '테스트 초밥',
         '테스트 순두부찌개',
       ]);
       expect(all.body.items[0].recommendCount7d).toBe(2);
-      expect(all.body.counts).toEqual({ all: 2, hidden: 1 });
-      expect(
-        (
-          await as(
-            http().get('/v1/admin/menus').query({ visible: 'false' }),
-          ).expect(200)
-        ).body.total,
-      ).toBe(1);
-      expect(
-        (
-          await as(
-            http().get('/v1/admin/menus').query({ cuisine: '일식' }),
-          ).expect(200)
-        ).body.items[0].name,
-      ).toBe('테스트 초밥');
-      expect(
-        (
-          await as(http().get('/v1/admin/menus').query({ q: '바지락' })).expect(
-            200,
-          )
-        ).body.total,
-      ).toBe(1);
-      const paged = await as(
-        http().get('/v1/admin/menus').query({ size: 1, page: 9 }),
+      expect(all.body.counts).toEqual({
+        all: base.all + 2,
+        hidden: base.hidden + 1,
+      });
+      expect((await list({ visible: 'false' })).body.total).toBe(1);
+      expect((await list({ cuisine: '일식' })).body.items[0].name).toBe(
+        '테스트 초밥',
+      );
+      // 재료로도 찾는다
+      const byIngredient = await as(
+        http().get('/v1/admin/menus').query({ q: '생선' }),
       ).expect(200);
+      expect(
+        byIngredient.body.items.map((m: { name: string }) => m.name),
+      ).toContain('테스트 초밥');
+      const paged = await list({ size: 1, page: 9 });
       expect(paged.body).toMatchObject({ page: 2, size: 1, total: 2 });
     });
 

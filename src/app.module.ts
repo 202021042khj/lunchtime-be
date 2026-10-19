@@ -16,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { FavoritesModule } from './modules/favorites/favorites.module.js';
 import { LocationsModule } from './modules/locations/locations.module.js';
 import { PreferencesModule } from './modules/preferences/preferences.module.js';
+import { RecommendationsModule } from './modules/recommendations/recommendations.module.js';
 import { RestaurantsModule } from './modules/restaurants/restaurants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { WeatherModule } from './modules/weather/weather.module.js';
@@ -41,6 +42,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     RestaurantsModule,
     FavoritesModule,
     WeatherModule,
+    RecommendationsModule,
     AdminAuthModule,
     AdminCatalogModule,
   ],

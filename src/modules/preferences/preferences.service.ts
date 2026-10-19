@@ -137,7 +137,7 @@ export class PreferencesService {
   }
 
   // 최근 7일 추천 수로 매긴 메뉴 인기 순위 (1부터). 기록이 없는 메뉴는 순위 없음
-  private async popularityRanks(): Promise<Map<string, number>> {
+  async popularityRanks(): Promise<Map<string, number>> {
     const since = new Date(
       this.clock.now().getTime() - POPULARITY_DAYS * 24 * 60 * 60 * 1000,
     );

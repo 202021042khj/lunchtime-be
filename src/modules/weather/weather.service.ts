@@ -47,6 +47,14 @@ interface NowWeather {
   label: string;
 }
 
+// 기상청은 값이 없으면 -999 · +900 같은 표시를 준다 (바다 · 관측 누락). 기온으로 쓰지 않는다
+const validTemp = (v: unknown) => {
+  const n = Number(v);
+  return v != null && v !== '' && Number.isFinite(n) && Math.abs(n) < 90
+    ? n
+    : null;
+};
+
 // 현재 기온 · 하늘 + 오늘 최고/최저를 합친다. 순수 함수 (테스트용으로 내보냄)
 export function parseNow(ncst: KmaItem[], ultra: KmaItem[]): NowWeather {
   const obs = Object.fromEntries(ncst.map((i) => [i.category, i.obsrValue]));
@@ -57,8 +65,8 @@ export function parseNow(ncst: KmaItem[], ultra: KmaItem[]): NowWeather {
     )[0]?.fcstValue;
   const pty = obs.PTY && obs.PTY !== '0' ? PTY[obs.PTY] : undefined;
   const [condition, label] = pty ?? SKY[sky ?? ''] ?? ['cloudy', '구름많음'];
-  const temp = Number(obs.T1H);
-  if (!Number.isFinite(temp))
+  const temp = validTemp(obs.T1H);
+  if (temp === null)
     throw new AppException(
       'UPSTREAM_UNAVAILABLE',
       '날씨 정보를 불러오지 못했어요.',
@@ -74,9 +82,8 @@ export function parseDaily(
     const value = daily.find(
       (i) => i.category === category && i.fcstDate === today,
     )?.fcstValue;
-    return value != null && Number.isFinite(Number(value))
-      ? Math.round(Number(value))
-      : null;
+    const temp = validTemp(value);
+    return temp === null ? null : Math.round(temp);
   };
   return { highC: pick('TMX'), lowC: pick('TMN') };
 }

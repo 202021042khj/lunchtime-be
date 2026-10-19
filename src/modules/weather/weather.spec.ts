@@ -74,6 +74,15 @@ describe('날씨 해석', () => {
     ).toThrow();
   });
 
+  it('기상청 값 없음 표시(-999 등)는 날씨 없음 · 최고/최저 null', () => {
+    expect(() => parseNow(ncst('0', '-999'), ultra)).toThrow();
+    const daily = [
+      { category: 'TMX', fcstDate: '20261016', fcstValue: '-999.0' },
+      { category: 'TMN', fcstDate: '20261016', fcstValue: '900' },
+    ];
+    expect(parseDaily(daily, '20261016')).toEqual({ highC: null, lowC: null });
+  });
+
   it('오늘 최고 · 최저만 고르고, 없으면 null', () => {
     const daily = [
       { category: 'TMX', fcstDate: '20261016', fcstValue: '21.0' },
